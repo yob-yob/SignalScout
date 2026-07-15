@@ -4,9 +4,11 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import AnalysisPanel from '$lib/components/AnalysisPanel.svelte';
 	import MapView from '$lib/components/MapView.svelte';
+	import ApiDisclaimerModal from '$lib/components/ApiDisclaimerModal.svelte';
 	import { store, addTower, updateAssumptions } from '$lib/state/analysis.svelte';
 	import { decodeShareState, loadSession, saveSession } from '$lib/share';
 	import { syncQueryParams, decodeQueryParams } from '$lib/url';
+	import { disclaimer, checkDisclaimer, dismissDisclaimer } from '$lib/state/disclaimer.svelte';
 
 	let kitReady = $state(false);
 
@@ -16,6 +18,7 @@
 
 	onMount(() => {
 		hydrateState();
+		checkDisclaimer();
 	});
 
 	function hydrateState() {
@@ -99,3 +102,7 @@
 		<Sidebar />
 	</div>
 </div>
+
+{#if disclaimer.visible}
+	<ApiDisclaimerModal dismiss={dismissDisclaimer} />
+{/if}

@@ -102,10 +102,6 @@ export async function triggerAnalysis() {
 	await runAnalysis();
 }
 
-export function fetchTowerElevation(towerId: string) {
-	ensureElevations(towerId);
-}
-
 async function ensureElevations(towerId: string) {
 	const existing = store.towerStates[towerId];
 	if (existing?.samples && existing.samples.length > 0) return;

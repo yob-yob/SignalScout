@@ -1,6 +1,7 @@
 import type { LatLon } from './geo';
 import { samplePath, haversine } from './geo';
 import type { SamplePoint } from './rf';
+import { recordApiCall, recordCacheHit } from './state/stats.svelte';
 
 const MAX_COORDS_PER_REQUEST = 100;
 const ELEVATION_API = 'https://api.open-meteo.com/v1/elevation';
@@ -47,6 +48,7 @@ async function fetchChunk(coords: LatLon[]): Promise<number[]> {
 	const lons = coords.map((c) => c.lon.toFixed(6)).join(',');
 	const url = `${ELEVATION_API}?latitude=${lats}&longitude=${lons}`;
 
+	recordApiCall();
 	const res = await fetch(url);
 	if (!res.ok) {
 		throw new Error(`Elevation API returned status ${res.status}`);
@@ -74,10 +76,14 @@ export async function fetchElevation(
 	const key = fullKey(target, tower, spacingM);
 
 	const memResult = memoryCache.get(key);
-	if (memResult) return memResult;
+	if (memResult) {
+		recordCacheHit();
+		return memResult;
+	}
 
 	const lsResult = loadFromLocalStorage(key);
 	if (lsResult) {
+		recordCacheHit();
 		memoryCache.set(key, lsResult);
 		return lsResult;
 	}

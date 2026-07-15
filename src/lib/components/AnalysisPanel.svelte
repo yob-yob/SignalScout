@@ -1,18 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import TowerDetail from './TowerDetail.svelte';
-	import { store, fetchTowerElevation, setSelectedTowerId } from '$lib/state/analysis.svelte';
-
-	let _prevSelected = $state<string | null>(null);
-
-	$effect(() => {
-		const id = store.selectedTowerId;
-		if (id && id !== _prevSelected) {
-			_prevSelected = id;
-			fetchTowerElevation(id);
-		}
-		if (!id) _prevSelected = null;
-	});
+	import { store, setSelectedTowerId } from '$lib/state/analysis.svelte';
 
 	let hasSelection = $derived(!!store.selectedTowerId);
 	let isReady = $derived.by(() => {

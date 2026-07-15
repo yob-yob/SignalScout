@@ -5,6 +5,7 @@
 	import TowerRepeater from './TowerRepeater.svelte';
 	import AssumptionsPanel from './AssumptionsPanel.svelte';
 	import RankingList from './RankingList.svelte';
+	import StatsFooter from './StatsFooter.svelte';
 	import { store, triggerAnalysis } from '$lib/state/analysis.svelte';
 	import { encodeShareState } from '$lib/share';
 
@@ -89,4 +90,6 @@
 			</p>
 		</div>
 	</div>
+
+	<StatsFooter />
 </aside>

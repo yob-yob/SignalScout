@@ -1,16 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { afterNavigate, replaceState } from '$app/navigation';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import MapView from '$lib/components/MapView.svelte';
 	import { store, addTower, updateAssumptions } from '$lib/state/analysis.svelte';
 	import { decodeShareState, loadSession, saveSession } from '$lib/share';
 	import { syncQueryParams, decodeQueryParams } from '$lib/url';
 
-	let ready = $state(false);
+	let kitReady = $state(false);
+
+	afterNavigate(() => {
+		kitReady = true;
+	});
 
 	onMount(() => {
 		hydrateState();
-		ready = true;
 	});
 
 	function hydrateState() {
@@ -63,11 +67,11 @@
 	}
 
 	$effect(() => {
-		if (!ready) return;
+		if (!kitReady) return;
 		const hasState = store.target || store.towers.length > 0;
 		if (!hasState) return;
 
-		syncQueryParams(store.target, store.targetLabel, store.towers, store.assumptions);
+		syncQueryParams(store.target, store.targetLabel, store.towers, store.assumptions, replaceState);
 
 		saveSession({
 			v: 1,

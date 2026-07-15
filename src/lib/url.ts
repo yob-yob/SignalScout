@@ -6,6 +6,7 @@ export function syncQueryParams(
 	targetLabel: string,
 	towers: Tower[],
 	assumptions: Assumptions,
+	replace: (url: string, state: Record<string, unknown>) => void,
 ) {
 	const p = new URLSearchParams();
 
@@ -21,17 +22,17 @@ export function syncQueryParams(
 		const n = i + 1;
 		p.set(`t${n}_lat`, t.pos.lat.toFixed(6));
 		p.set(`t${n}_lon`, t.pos.lon.toFixed(6));
-		if (t.name) p.set(`t${n}_name`, t.name);
+		if (t.name && t.name !== `Tower ${n}`) p.set(`t${n}_name`, t.name);
 		if (t.color && t.color !== '#2563eb') p.set(`t${n}_color`, t.color);
 	});
 
-	if (assumptions.poleHeightM !== 10) p.set('ph', String(assumptions.poleHeightM));
-	if (assumptions.towerHeightM !== 35) p.set('th', String(assumptions.towerHeightM));
-	if (assumptions.freqMHz !== 700) p.set('f', String(assumptions.freqMHz));
+	p.set('ph', String(assumptions.poleHeightM));
+	p.set('th', String(assumptions.towerHeightM));
+	p.set('f', String(assumptions.freqMHz));
 
 	const qs = p.toString();
 	const url = qs ? `?${qs}` : window.location.pathname;
-	window.history.replaceState({}, '', url);
+	replace(url, {});
 }
 
 export function decodeQueryParams(): {

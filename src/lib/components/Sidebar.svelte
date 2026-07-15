@@ -67,7 +67,7 @@
 			disabled={!store.target || store.towers.length === 0}
 			onclick={() => triggerAnalysis()}
 		>
-			Analyze paths
+			{store.analyzed ? 'Re-analyze paths' : 'Analyze paths'}
 		</Button>
 
 		{#if store.target && store.towers.length > 0 && !store.analyzed}

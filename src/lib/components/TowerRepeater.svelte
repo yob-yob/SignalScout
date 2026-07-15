@@ -13,6 +13,17 @@
 
 	let rawInputs = $state<Record<string, string>>({});
 	let errors = $state<Record<string, string>>({});
+	let populated = new Set<string>();
+
+	// auto-populate inputs when towers are loaded from URL/share
+	$effect(() => {
+		for (const t of store.towers) {
+			if (!populated.has(t.id) && t.pos && (t.pos.lat !== 0 || t.pos.lon !== 0)) {
+				rawInputs = { ...rawInputs, [t.id]: `${t.pos.lat}, ${t.pos.lon}` };
+				populated.add(t.id);
+			}
+		}
+	});
 
 	function handleAdd() {
 		const t = addTower({ lat: 0, lon: 0 });

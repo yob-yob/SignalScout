@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Slider } from '$lib/components/ui/slider';
 	import { store, updateAssumptions } from '$lib/state/analysis.svelte';
 
 	const FREQ_OPTIONS = [
@@ -16,34 +15,36 @@
 	<span class="text-sm font-medium">Configuration</span>
 
 	<div class="space-y-1.5">
-		<span class="text-xs font-medium flex justify-between">
+		<label for="pole-slider" class="text-xs font-medium flex justify-between">
 			<span>Antenna height at target</span>
 			<span class="text-muted-foreground tabular-nums">{store.assumptions.poleHeightM} m</span>
-		</span>
-		<!-- svelte-ignore a11y_label_has_associated_control -->
-		<Slider
-			type="multiple"
-			value={[store.assumptions.poleHeightM]}
-			min={0}
-			max={30}
-			step={0.5}
-			{...{ onvaluechange: (e: { value: number[] }) => updateAssumptions({ poleHeightM: e.value[0] }) } as Record<string, unknown>}
+		</label>
+		<input
+			id="pole-slider"
+			type="range"
+			min="0" max="30" step="0.5"
+			value={store.assumptions.poleHeightM}
+			oninput={(e) => updateAssumptions({ poleHeightM: Number(e.currentTarget.value) })}
+			class="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary
+				[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-ring [&::-webkit-slider-thumb]:shadow-sm
+				[&::-moz-range-thumb]:size-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-ring"
 		/>
 	</div>
 
 	<div class="space-y-1.5">
-		<span class="text-xs font-medium flex justify-between">
+		<label for="tower-slider" class="text-xs font-medium flex justify-between">
 			<span>Tower structure height</span>
 			<span class="text-muted-foreground tabular-nums">{store.assumptions.towerHeightM} m</span>
-		</span>
-		<!-- svelte-ignore a11y_label_has_associated_control -->
-		<Slider
-			type="multiple"
-			value={[store.assumptions.towerHeightM]}
-			min={10}
-			max={60}
-			step={0.5}
-			{...{ onvaluechange: (e: { value: number[] }) => updateAssumptions({ towerHeightM: e.value[0] }) } as Record<string, unknown>}
+		</label>
+		<input
+			id="tower-slider"
+			type="range"
+			min="10" max="60" step="0.5"
+			value={store.assumptions.towerHeightM}
+			oninput={(e) => updateAssumptions({ towerHeightM: Number(e.currentTarget.value) })}
+			class="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary
+				[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-ring [&::-webkit-slider-thumb]:shadow-sm
+				[&::-moz-range-thumb]:size-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-ring"
 		/>
 	</div>
 

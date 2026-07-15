@@ -3,9 +3,9 @@
 
 	let { result, color }: { result: PathAnalysis; color: string } = $props();
 
-	const PAD = { top: 24, right: 16, bottom: 32, left: 44 };
-	const W = 500;
-	const H = 200;
+	const PAD = { top: 28, right: 16, bottom: 36, left: 44 };
+	const W = 720;
+	const H = 280;
 	const PW = W - PAD.left - PAD.right;
 	const PH = H - PAD.top - PAD.bottom;
 

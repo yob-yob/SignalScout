@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { afterNavigate, replaceState } from '$app/navigation';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import AnalysisPanel from '$lib/components/AnalysisPanel.svelte';
 	import MapView from '$lib/components/MapView.svelte';
 	import { store, addTower, updateAssumptions } from '$lib/state/analysis.svelte';
 	import { decodeShareState, loadSession, saveSession } from '$lib/share';
@@ -87,6 +88,8 @@
 	<div class="w-[400px] shrink-0 hidden md:flex flex-col border-r">
 		<Sidebar />
 	</div>
+
+	<AnalysisPanel />
 
 	<div class="flex-1 min-h-0 relative order-first md:order-none md:h-auto h-[45vh] md:shrink shrink-0">
 		<MapView />

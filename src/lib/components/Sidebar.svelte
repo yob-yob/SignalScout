@@ -5,21 +5,10 @@
 	import TowerRepeater from './TowerRepeater.svelte';
 	import AssumptionsPanel from './AssumptionsPanel.svelte';
 	import RankingList from './RankingList.svelte';
-	import TowerDetail from './TowerDetail.svelte';
-	import { store, triggerAnalysis, fetchTowerElevation } from '$lib/state/analysis.svelte';
+	import { store, triggerAnalysis } from '$lib/state/analysis.svelte';
 	import { encodeShareState } from '$lib/share';
 
-	let _prevSelected = $state<string | null>(null);
 	let copied = $state(false);
-
-	$effect(() => {
-		const id = store.selectedTowerId;
-		if (id && id !== _prevSelected) {
-			_prevSelected = id;
-			fetchTowerElevation(id);
-		}
-		if (!id) _prevSelected = null;
-	});
 
 	function copyShareLink() {
 		const encoded = encodeShareState(store.target, store.targetLabel, store.towers, store.assumptions);
@@ -85,9 +74,7 @@
 				</Button>
 			</div>
 			<RankingList />
-			{#if store.selectedTowerId}
-				<TowerDetail />
-			{:else}
+			{#if !store.selectedTowerId}
 				<p class="text-xs text-muted-foreground text-center py-2">
 					Select a tower from the list or click a pin on the map to see terrain profile.
 				</p>

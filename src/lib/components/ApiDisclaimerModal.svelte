@@ -17,7 +17,7 @@
 </script>
 
 <div
-	class="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+	class="fixed inset-0 z-1100 flex items-center justify-center bg-black/70 backdrop-blur-sm"
 >
 	<div class="bg-card text-card-foreground border rounded-lg shadow-xl max-w-lg w-full mx-4 p-6 flex flex-col gap-4">
 		<h2 class="text-lg font-semibold">Before you begin</h2>

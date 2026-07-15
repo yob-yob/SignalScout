@@ -1,5 +1,9 @@
 # SignalScout
 
+<p align="center">
+  <img src="docs/sample.png" alt="SignalScout demo screenshot" width="720">
+</p>
+
 Cell Tower Line-of-Sight & Terrain Analyzer — a single-page web app that helps you figure out which nearby cell tower to aim a directional antenna at, and how high to mount it.
 
 ## Quick start
@@ -23,6 +27,8 @@ bun test         # run all tests
    - Distance, bearing, path loss, and obstruction details
    - Plain-language interpretation of the link quality
 6. Use **Copy share link** to share your analysis via URL
+
+See [docs/usage.md](docs/usage.md) for a detailed walkthrough.
 
 ## Tech stack
 
@@ -54,30 +60,13 @@ All RF math is in `src/lib/rf.ts` — pure TypeScript functions implementing:
 
 Unit-tested against a validated real-world fixture (see `tests/rf.test.ts`).
 
-## Project structure
+## Contributing
 
-```
-src/
-  lib/
-    geo.ts              # haversine, bearing, samplePath, compassPoint
-    rf.ts               # LOS, Fresnel, knife-edge, solver, FSPL, verdict
-    elevation.ts        # chunked API fetch, caching (memory + localStorage)
-    share.ts            # URL state (de)serialization
-    state/
-      analysis.svelte.ts  # Svelte 5 runes store
-    components/
-      Sidebar.svelte
-      TargetForm.svelte
-      TowerRepeater.svelte
-      AssumptionsPanel.svelte
-      RankingList.svelte
-      TowerDetail.svelte
-      ProfileChart.svelte
-      MapView.svelte
-  routes/
-    +layout.ts          # ssr=false, prerender=true (SPA mode)
-    +page.svelte        # main layout
-tests/
-  geo.test.ts           # 21 tests
-  rf.test.ts            # 31 tests (§10 fixture + unit tests)
-```
+1. Fork the repo and create a feature branch
+2. Run `bun test` to ensure existing tests pass
+3. Add tests for new functionality
+4. Submit a pull request with a clear description of the change
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.

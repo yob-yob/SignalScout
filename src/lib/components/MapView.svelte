@@ -14,6 +14,44 @@
 	let worstObstructionMarkers: Map<string, import('leaflet').Marker> = new Map();
 	let leafletModule: typeof import('leaflet') | null = null;
 
+	let contextMenu = $state({ visible: false, x: 0, y: 0, lat: 0, lon: 0 });
+	let contextMenuEl = $state<HTMLDivElement>();
+
+	function dismissContextMenu() {
+		contextMenu = { visible: false, x: 0, y: 0, lat: 0, lon: 0 };
+	}
+
+	function showContextMenu(e: any) {
+		e.originalEvent.preventDefault();
+		const x = e.originalEvent.clientX;
+		const y = e.originalEvent.clientY;
+		const lat = e.latlng.lat;
+		const lon = e.latlng.lng;
+
+		dismissContextMenu();
+		contextMenu = { visible: true, x, y, lat, lon };
+
+		function onDown(ev: MouseEvent) {
+			if (ev.button === 2) return;
+			if (contextMenuEl && contextMenuEl.contains(ev.target as Node)) return;
+			dismissContextMenu();
+			document.removeEventListener('mousedown', onDown, true);
+			document.removeEventListener('keydown', onEsc, true);
+		}
+
+		function onEsc(ev: KeyboardEvent) {
+			if (ev.key !== 'Escape') return;
+			dismissContextMenu();
+			document.removeEventListener('mousedown', onDown, true);
+			document.removeEventListener('keydown', onEsc, true);
+		}
+
+		setTimeout(() => {
+			document.addEventListener('mousedown', onDown, true);
+			document.addEventListener('keydown', onEsc, true);
+		}, 0);
+	}
+
 	onMount(() => {
 		initMap();
 		return () => {
@@ -93,6 +131,7 @@
 					offset: [0, -10],
 				})
 				.addTo(map);
+			targetMarker.on('contextmenu', showContextMenu);
 			allPoints.push(tLatLng);
 		}
 
@@ -124,6 +163,7 @@
 			marker.on('click', () => {
 				store.selectedTowerId = tower.id;
 			});
+			marker.on('contextmenu', showContextMenu);
 
 			towerMarkers.set(tower.id, marker);
 			allPoints.push(tLatLng);
@@ -203,6 +243,7 @@
 				})
 				.addTo(map);
 			highPointMarkers.set(tower.id, hpMarker);
+			hpMarker.on('contextmenu', showContextMenu);
 			allPoints.push(hpLatLng);
 
 			const worst = state.result?.worst;
@@ -237,8 +278,9 @@
 						offset: [0, -8],
 					})
 					.addTo(map);
-				worstObstructionMarkers.set(tower.id, woMarker);
-				allPoints.push(woLatLng);
+			worstObstructionMarkers.set(tower.id, woMarker);
+			woMarker.on('contextmenu', showContextMenu);
+			allPoints.push(woLatLng);
 			}
 		}
 
@@ -257,7 +299,27 @@
 	});
 </script>
 
-<div bind:this={mapContainer} class="w-full h-full min-h-0"></div>
+<div class="w-full h-full min-h-0 relative">
+	<div bind:this={mapContainer} class="w-full h-full min-h-0"></div>
+	{#if contextMenu.visible}
+		<div
+			bind:this={contextMenuEl}
+			class="fixed z-[1000] bg-background border border-border rounded-md shadow-lg py-1"
+			style="left: {contextMenu.x}px; top: {contextMenu.y}px;"
+		>
+			<button
+				class="block w-full text-left text-xs px-3 py-1.5 hover:bg-muted rounded-sm cursor-pointer whitespace-nowrap"
+				onclick={async () => {
+					console.log('Copy coordinates:', `${contextMenu.lat.toFixed(6)}, ${contextMenu.lon.toFixed(6)}`);
+					await navigator.clipboard.writeText(`${contextMenu.lat.toFixed(6)}, ${contextMenu.lon.toFixed(6)}`);
+					dismissContextMenu();
+				}}
+			>
+				Copy coordinates
+			</button>
+		</div>
+	{/if}
+</div>
 
 <style>
 	:global(.path-label) {

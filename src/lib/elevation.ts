@@ -117,8 +117,8 @@ export function getCachedElevation(
 }
 
 export type ElevationResult =
-	| { samples: SamplePoint[]; error?: undefined }
-	| { samples?: undefined; error: string };
+	| { samples: SamplePoint[]; path: LatLon[]; error?: undefined }
+	| { samples?: undefined; path?: undefined; error: string };
 
 export async function getElevations(
 	target: LatLon,
@@ -139,7 +139,7 @@ export async function getElevations(
 			});
 		}
 
-		return { samples };
+		return { samples, path };
 	} catch (err) {
 		return { error: err instanceof Error ? err.message : 'Failed to fetch elevation data' };
 	}

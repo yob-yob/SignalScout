@@ -10,6 +10,8 @@
 	let towerMarkers: Map<string, import('leaflet').Marker> = new Map();
 	let polylines: Map<string, import('leaflet').Polyline> = new Map();
 	let midpointLabels: Map<string, import('leaflet').Tooltip> = new Map();
+	let highPointMarkers: Map<string, import('leaflet').Marker> = new Map();
+	let worstObstructionMarkers: Map<string, import('leaflet').Marker> = new Map();
 	let leafletModule: typeof import('leaflet') | null = null;
 
 	onMount(() => {
@@ -56,9 +58,13 @@
 		for (const m of towerMarkers.values()) m.remove();
 		for (const p of polylines.values()) p.remove();
 		for (const l of midpointLabels.values()) l.remove();
+		for (const m of highPointMarkers.values()) m.remove();
+		for (const m of worstObstructionMarkers.values()) m.remove();
 		towerMarkers.clear();
 		polylines.clear();
 		midpointLabels.clear();
+		highPointMarkers.clear();
+		worstObstructionMarkers.clear();
 
 		const _target = store.target;
 		const _towers = store.towers;
@@ -157,6 +163,85 @@
 			midpointLabels.set(tower.id, tooltip);
 		}
 
+		for (const tower of _towers) {
+			const state = store.towerStates[tower.id];
+			if (!_target || state?.status !== 'loaded' || !state.samples || !state.path) continue;
+			if (state.samples.length < 3) continue;
+
+			const samples = state.samples;
+			const path = state.path;
+			const n = samples.length;
+
+			let highestIdx = 1;
+			let highestElev = samples[1].elevM;
+			for (let i = 2; i < n - 1; i++) {
+				if (samples[i].elevM > highestElev) {
+					highestElev = samples[i].elevM;
+					highestIdx = i;
+				}
+			}
+
+			const hpLatLng: import('leaflet').LatLngExpression = [path[highestIdx].lat, path[highestIdx].lon];
+			const hpMarker = L.marker(hpLatLng, {
+				icon: L.divIcon({
+					html: `<div style="
+						width: 12px; height: 12px;
+						background: #ea580c;
+						border: 2px solid #fff;
+						transform: rotate(45deg);
+						box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+					"></div>`,
+					className: '',
+					iconSize: [16, 16],
+					iconAnchor: [8, 8],
+				}),
+			})
+				.bindTooltip(`Highest: ${highestElev.toFixed(0)} m ASL`, {
+					permanent: false,
+					direction: 'top',
+					offset: [0, -8],
+				})
+				.addTo(map);
+			highPointMarkers.set(tower.id, hpMarker);
+			allPoints.push(hpLatLng);
+
+			const worst = state.result?.worst;
+			if (worst) {
+				let worstIdx = 0;
+				let minDist = Infinity;
+				for (let i = 1; i < n - 1; i++) {
+					const diff = Math.abs(samples[i].dM - worst.dM);
+					if (diff < minDist) {
+						minDist = diff;
+						worstIdx = i;
+					}
+				}
+				const woLatLng: import('leaflet').LatLngExpression = [path[worstIdx].lat, path[worstIdx].lon];
+				const woMarker = L.marker(woLatLng, {
+					icon: L.divIcon({
+						html: `<div style="
+							width: 0; height: 0;
+							border-left: 7px solid transparent;
+							border-right: 7px solid transparent;
+							border-bottom: 12px solid #dc2626;
+							filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+						"></div>`,
+						className: '',
+						iconSize: [14, 14],
+						iconAnchor: [7, 12],
+					}),
+				})
+					.bindTooltip(`+${worst.aboveLosM.toFixed(0)} m above LOS`, {
+						permanent: false,
+						direction: 'top',
+						offset: [0, -8],
+					})
+					.addTo(map);
+				worstObstructionMarkers.set(tower.id, woMarker);
+				allPoints.push(woLatLng);
+			}
+		}
+
 		if (allPoints.length > 0) {
 			const bounds = L.latLngBounds(allPoints);
 			map.fitBounds(bounds.pad(0.2), { animate: true });
@@ -167,6 +252,7 @@
 		void store.target;
 		void store.towers;
 		void store.selectedTowerId;
+		void store.towerStates;
 		if (map && leafletModule) refreshAll();
 	});
 </script>

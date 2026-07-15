@@ -24,6 +24,7 @@ export type TowerAnalysisState = {
 	status: CacheStatus;
 	error?: string;
 	samples?: SamplePoint[];
+	path?: LatLon[];
 	result?: PathAnalysis;
 };
 
@@ -129,7 +130,7 @@ async function ensureElevations(towerId: string) {
 	}
 	const analysis = deriveAnalysis(towerId, samples, distanceM, bearingDeg);
 
-	store.towerStates = { ...store.towerStates, [towerId]: { status: 'loaded', samples, result: analysis } };
+	store.towerStates = { ...store.towerStates, [towerId]: { status: 'loaded', samples, path: result.path, result: analysis } };
 }
 
 function deriveAnalysis(

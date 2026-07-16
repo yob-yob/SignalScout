@@ -1,0 +1,21 @@
+# SignalScout
+
+A single-page web application that helps rural/off-grid users determine which nearby cell tower to aim a directional antenna at — by visualizing terrain profiles, line-of-sight (LOS), Fresnel-zone clearance, and knife-edge diffraction loss between a target location and user-supplied cell tower locations.
+
+## How It Works
+
+1. Enter your target location (latitude, longitude)
+2. Add nearby cell tower coordinates (sourced from cellmapper.net)
+3. Click "Analyze paths" to see terrain profiles, clearance analysis, and ranked tower recommendations
+
+## Details
+
+- **Map**: OpenStreetMap via Leaflet
+- **Elevation data**: Open-Meteo Elevation API (Copernicus GLO-90 DEM, 90 m resolution)
+- **Analysis**: Haversine distance, line-of-sight, 60% first-Fresnel-zone clearance, single knife-edge diffraction loss (ITU-R P.526), free-space path loss
+- **Frequency bands**: 700 / 850 / 1800 / 2100 / 2600 / 3500 MHz
+
+## Links
+
+- [SignalScout](https://signalscout.yob-yob.com/) — main application
+- [Source code](https://github.com/anomalyco/SignalScout) — GitHub repository

@@ -46,18 +46,17 @@
 
 <div class="space-y-3">
 	<div>
-		<label for="target-coords" class="text-sm font-medium mb-1 block">
-			Target location (lat, lon)
+		<label class="block">
+			<span class="text-sm font-medium mb-1 block">Target location (lat, lon)</span>
+			<Input
+				placeholder="e.g. 10.0708, 123.6111"
+				value={store.targetInput}
+				oninput={(e: Event) => {
+					store.targetInput = (e.currentTarget as HTMLInputElement).value;
+				}}
+				onblur={validate}
+			/>
 		</label>
-		<Input
-			id="target-coords"
-			placeholder="e.g. 10.0708, 123.6111"
-			value={store.targetInput}
-			oninput={(e: Event) => {
-				store.targetInput = (e.currentTarget as HTMLInputElement).value;
-			}}
-			onblur={validate}
-		/>
 		{#if error}
 			<p class="text-xs text-destructive mt-1">{error}</p>
 		{/if}
@@ -65,13 +64,14 @@
 
 	<div class="flex gap-2 items-end">
 		<div class="flex-1">
-			<label for="target-label" class="text-sm font-medium mb-1 block">Label (optional)</label>
-			<Input
-				id="target-label"
-				placeholder="Target"
-				value={store.targetLabel}
-				oninput={(e: Event) => (store.targetLabel = (e.currentTarget as HTMLInputElement).value)}
-			/>
+			<label class="block">
+				<span class="text-sm font-medium mb-1 block">Label (optional)</span>
+				<Input
+					placeholder="Target"
+					value={store.targetLabel}
+					oninput={(e: Event) => (store.targetLabel = (e.currentTarget as HTMLInputElement).value)}
+				/>
+			</label>
 		</div>
 		<Button variant="ghost" size="default" onclick={handleGeolocate} class="whitespace-nowrap">
 			&#8982; Use my location

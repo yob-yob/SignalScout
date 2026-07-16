@@ -21,22 +21,16 @@
 
 	respond /health 200
 
-	# Immutable SvelteKit assets — content-hashed filenames, safe to cache forever
-	route /_app/immutable/* {
-		header {
-			Cache-Control "public, max-age=31536000, immutable"
-			X-Content-Type-Options "nosniff"
-			-Server
-		}
+	# Security headers + default cache (short-lived for HTML, txt, etc.)
+	header {
+		X-Content-Type-Options "nosniff"
+		-Server
+		Cache-Control "public, max-age=0, must-revalidate"
 	}
 
-	# Everything else (HTML, robots.txt, llms.txt, etc.) — no persistent cache
-	route {
-		header {
-			Cache-Control "public, max-age=0, must-revalidate"
-			X-Content-Type-Options "nosniff"
-			-Server
-		}
+	# Override: immutable SvelteKit assets — content-hashed filenames, safe to cache forever
+	header /_app/immutable/* {
+		Cache-Control "public, max-age=31536000, immutable"
 	}
 
 	# serve from the root directory
@@ -48,11 +42,10 @@
 		hide .env*
 	}
 
-	# Compression — brotli preferred, with gzip and zstd fallbacks
+	# Compression — zstd first, gzip fallback (brotli not included in stock Caddy build)
 	encode {
-		br
-		gzip
 		zstd
+		gzip
 	}
 
 	# match against direct file matches, folder-level index.html, and optionally fallback to root index.html

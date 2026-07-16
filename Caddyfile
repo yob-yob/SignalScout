@@ -1,0 +1,60 @@
+# global options
+{
+	admin off
+	persist_config off
+	auto_https off
+
+	log {
+		format json
+	}
+
+	servers {
+		trusted_proxies static private_ranges 100.0.0.0/8 # trust railway's proxy
+	}
+}
+
+# site block, listens on the $PORT environment variable, automatically assigned by railway
+:{$PORT:80} {
+	log {
+		format json
+	}
+
+	respond /health 200
+
+	# Immutable SvelteKit assets — content-hashed filenames, safe to cache forever
+	route /_app/immutable/* {
+		header {
+			Cache-Control "public, max-age=31536000, immutable"
+			X-Content-Type-Options "nosniff"
+			-Server
+		}
+	}
+
+	# Everything else (HTML, robots.txt, llms.txt, etc.) — no persistent cache
+	route {
+		header {
+			Cache-Control "public, max-age=0, must-revalidate"
+			X-Content-Type-Options "nosniff"
+			-Server
+		}
+	}
+
+	# serve from the root directory
+	root * {{.DIST_DIR}}
+
+	# Handle static files
+	file_server {
+		hide .git
+		hide .env*
+	}
+
+	# Compression — brotli preferred, with gzip and zstd fallbacks
+	encode {
+		br
+		gzip
+		zstd
+	}
+
+	# match against direct file matches, folder-level index.html, and optionally fallback to root index.html
+	try_files {path} {path}.html {path}/index.html{{if .IndexFallback}} /index.html{{end}}
+}

@@ -1,25 +1,28 @@
 name: Deploy
 
-# On a push to main (or by hand from the Actions tab): run the tests, then SSH to vps02
-# with a key that can only run `deploy-project signalscout` there (set up by the
-# infrastructure repo, playbooks/vps02-projects.yml):
-#   secret   VPS02_DEPLOY_KEY   private key for that restricted login
-#   variable VPS02_HOST         vps02.yob-yob.com
-#   variable VPS02_KNOWN_HOSTS  vps02's SSH host key, so the connection is verified
+# On a push to main (or by hand from the Actions tab): test and build here, then upload the
+# static build to the SignalScout LXC on homelab01, jumping through vps03 (the LXC has no
+# public address). Set up by the infrastructure repo, playbooks/homelab-apps.yml; the one
+# key can only open a tunnel to the LXC on vps03, and only run `deploy-static signalscout`
+# on the LXC, which unpacks the upload and switches the site to it:
+#   secret   DEPLOY_SSH_KEY      private key
+#   variable DEPLOY_HOST         the LXC's LAN address
+#   variable DEPLOY_JUMP         deploy-jump@vps03.yob-yob.com
+#   variable DEPLOY_KNOWN_HOSTS  host keys of vps03 and the LXC, so both hops are verified
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: deploy-vps02
+  group: deploy
   cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,21 +34,18 @@ jobs:
       - run: bun test
       - run: bun run build
 
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Deploy to vps02
+      - name: Upload the build to the SignalScout LXC
         env:
-          DEPLOY_KEY: ${{ secrets.VPS02_DEPLOY_KEY }}
-          KNOWN_HOSTS: ${{ vars.VPS02_KNOWN_HOSTS }}
-          HOST: ${{ vars.VPS02_HOST }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+          HOST: ${{ vars.DEPLOY_HOST }}
+          JUMP: ${{ vars.DEPLOY_JUMP }}
           COMMIT: ${{ github.sha }}
         run: |
           install -m 700 -d ~/.ssh
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+          tar -czf - -C build . | ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ProxyCommand="ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -W %h:%p $JUMP" \
             "root@$HOST" "deploy $COMMIT"

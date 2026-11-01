@@ -73,9 +73,8 @@ MIT — see [LICENSE](LICENSE) for details.
 
 ## Deployment
 
-Runs on vps02 as a Docker Compose stack (`Dockerfile`, `compose.yaml`): the static build
-served by Caddy, published only on vps02's NetBird address; Caddy on vps03 serves
-`signalscout.yob-yob.com` and proxies to it. A push to `main` runs the tests and then
-`.github/workflows/deploy.yml`, which triggers the deploy over a restricted SSH key. The
-server side (clone, `.env`, deploy script, key) lives in the infrastructure repo
-(`ansible/playbooks/vps02-projects.yml`).
+A static site: a push to `main` runs `.github/workflows/deploy.yml`, which tests and builds
+here and uploads `build/` to SignalScout's LXC on homelab01 (through vps03, over a restricted
+SSH key). Caddy in the LXC serves it; Caddy on vps03 serves `signalscout.yob-yob.com` and
+proxies to it. The server side (container, Caddy config, deploy script, keys) lives in the
+infrastructure repo (`ansible/playbooks/homelab-apps.yml`).

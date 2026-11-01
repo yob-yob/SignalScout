@@ -1,0 +1,24 @@
+# signalscout.yob-yob.com on vps02, as a Docker Compose stack.
+#
+# Deployed by .github/workflows/deploy.yml: on a push to main the tests run, then the
+# action SSHes to vps02, where /usr/local/bin/deploy-project checks out the commit in
+# /root/projects/signalscout and runs `docker compose up --detach --build --wait`.
+# The .env next to this file (BIND_ADDR, HTTP_PORT) is written by Ansible from the
+# infrastructure repo (playbooks/vps02-projects.yml) and is never committed.
+#
+# Published only on vps02's NetBird address; Caddy on vps03 proxies to it over the mesh.
+name: signalscout
+
+services:
+  web:
+    build: .
+    image: signalscout-web:latest
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${HTTP_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped

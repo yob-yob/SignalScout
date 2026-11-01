@@ -1,4 +1,6 @@
-# global options
+# Serves the static SvelteKit build inside the container (see Dockerfile).
+# On vps02 it listens only on the NetBird address; Caddy on vps03 terminates TLS
+# for signalscout.yob-yob.com and proxies here over the mesh.
 {
 	admin off
 	persist_config off
@@ -9,32 +11,31 @@
 	}
 
 	servers {
-		trusted_proxies static private_ranges 100.0.0.0/8 # trust railway's proxy
+		trusted_proxies static 100.102.65.205 # vps03's NetBird IP, the only client
 	}
 }
 
-# site block, listens on the $PORT environment variable, automatically assigned by railway
-:{$PORT:80} {
+:80 {
 	log {
 		format json
 	}
 
 	respond /health 200
 
-	# Security headers + default cache (short-lived for HTML, txt, etc.)
+	# Security headers
 	header {
 		X-Content-Type-Options "nosniff"
 		-Server
-		Cache-Control "public, max-age=0, must-revalidate"
 	}
 
-	# Override: immutable SvelteKit assets — content-hashed filenames, safe to cache forever
-	header /_app/immutable/* {
-		Cache-Control "public, max-age=31536000, immutable"
-	}
+	# Cache: immutable SvelteKit assets (content-hashed filenames) forever, everything
+	# else (HTML, txt, ...) revalidated. Two exclusive matchers, so neither overrides the other.
+	@immutable path /_app/immutable/*
+	@mutable not path /_app/immutable/*
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+	header @mutable Cache-Control "public, max-age=0, must-revalidate"
 
-	# serve from the root directory
-	root * {{.DIST_DIR}}
+	root * /srv
 
 	# Handle static files
 	file_server {
@@ -48,6 +49,6 @@
 		gzip
 	}
 
-	# match against direct file matches, folder-level index.html, and optionally fallback to root index.html
-	try_files {path} {path}.html {path}/index.html{{if .IndexFallback}} /index.html{{end}}
+	# direct file, page.html, folder index, then the SPA fallback (adapter-static fallback)
+	try_files {path} {path}.html {path}/index.html /index.html
 }

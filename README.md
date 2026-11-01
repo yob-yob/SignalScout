@@ -70,3 +70,12 @@ Unit-tested against a validated real-world fixture (see `tests/rf.test.ts`).
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
+
+## Deployment
+
+Runs on vps02 as a Docker Compose stack (`Dockerfile`, `compose.yaml`): the static build
+served by Caddy, published only on vps02's NetBird address; Caddy on vps03 serves
+`signalscout.yob-yob.com` and proxies to it. A push to `main` runs the tests and then
+`.github/workflows/deploy.yml`, which triggers the deploy over a restricted SSH key. The
+server side (clone, `.env`, deploy script, key) lives in the infrastructure repo
+(`ansible/playbooks/vps02-projects.yml`).

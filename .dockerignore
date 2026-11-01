@@ -1,0 +1,10 @@
+.git
+.github
+.agents
+.svelte-kit
+.tmp
+build
+node_modules
+docs
+tests
+.env*
